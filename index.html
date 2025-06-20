@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Lojinha Virtual</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            padding-bottom: 80px; /* Espaço para o botão fixo */
+        }
+        h1 {
+            color: #075e54;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 50px; /* Espaço para o carrinho flutuante */
+        }
+        .seletor-categoria {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .seletor-categoria select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+            cursor: pointer;
+        }
+        .seletor-categoria select:focus {
+            outline: none;
+            border-color: #075e54;
+        }
+        .produto {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .produto-imagem {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .produto-info {
+            flex: 1;
+        }
+        .produto-nome {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .produto-ref {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .produto-preco {
+            color: #075e54;
+            font-weight: bold;
+        }
+        .produto-estoque {
+            font-size: 12px;
+            color: #666;
+        }
+        .produto-controles {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .contador-quantidade {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .botao-quantidade {
+            width: 40px;
+            height: 40px;
+            background-color: #075e54;
+            color: white;
+            border: none;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+        }
+        .botao-quantidade:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .quantidade {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            border: none;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            font-size: 16px;
+            -moz-appearance: textfield;
+        }
+        .quantidade::-webkit-outer-spin-button,
+        .quantidade::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .botao-whatsapp-fixo {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            z-index: 100;
+        }
+        .botao-whatsapp-fixo:hover {
+            background-color: #128C7E;
+        }
+        .carrinho-flutuante {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #075e54;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .carrinho-contador {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff5722;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-conteudo {
+            background-color: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .fechar-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .item-carrinho {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .item-info {
+            flex: 1;
+        }
+        .item-nome {
+            font-weight: bold;
+        }
+        .item-detalhes {
+            font-size: 14px;
+            color: #666;
+        }
+        .remover-item {
+            color: #f44336;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 10px;
+        }
+        .total-carrinho {
+            font-weight: bold;
+            text-align: right;
+            margin-top: 15px;
+            font-size: 18px;
+        }
+        .whatsapp-icon {
+            width: 20px;
+            height: 20px;
+        }
+        .carrinho-icon {
+            width: 24px;
+            height: 24px;
+        }
+        .carregando {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .erro-carregamento {
+            text-align: center;
+            padding: 20px;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .sem-imagem {
+            width: 80px;
+            height: 80px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="carrinho-flutuante" onclick="abrirModalCarrinho()">
+        <svg class="carrinho-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+        <div class="carrinho-contador" id="contador-carrinho">0</div>
+    </div>
+    
+    <h1>🛒 Minha Lojinha Virtual</h1>
+    
+    <div class="seletor-categoria">
+        <select id="seletor-grupo">
+            <option value="">Carregando categorias...</option>
+        </select>
+    </div>
+    
+    <div id="produtos-container">
+        <div class="carregando">Selecione uma categoria para ver os produtos</div>
+    </div>
+    
+    <button class="botao-whatsapp-fixo" onclick="gerarPedidoWhatsApp()">
+        <svg class="whatsapp-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.624.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Finalizar Pedido via WhatsApp
+    </button>
+    
+    <div id="modal-carrinho" class="modal">
+        <div class="modal-conteudo">
+            <button class="fechar-modal" onclick="fecharModalCarrinho()">&times;</button>
+            <h2 style="color: #075e54; margin-top: 0;">Seu Carrinho</h2>
+            <div id="itens-carrinho"></div>
+            <div class="total-carrinho">Total: R$ <span id="total-carrinho">0,00</span></div>
+        </div>
+    </div>
+
+    <script>
+        let todosProdutos = [];
+        let grupoAtual = null;
+        let carrinho = [];
+
+        // Função para carregar os produtos do arquivo JSON
+        async function carregarProdutos() {
+            try {
+                const response = await fetch('lista_filial.json');
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar os produtos');
+                }
+                
+                todosProdutos = await response.json();
+                popularSeletorGrupos(todosProdutos);
+                
+                // Carrega o primeiro grupo por padrão
+                if (todosProdutos.length > 0) {
+                    const primeiroGrupo = [...new Set(todosProdutos.map(p => p.Grupo))][0];
+                    filtrarPorGrupo(primeiroGrupo);
+                    document.getElementById('seletor-grupo').value = primeiroGrupo;
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('seletor-grupo').innerHTML = '<option value="">Erro ao carregar categorias</option>';
+            }
+        }
+
+        // Preenche o seletor de grupos
+        function popularSeletorGrupos(produtos) {
+            const seletor = document.getElementById('seletor-grupo');
+            seletor.innerHTML = '';
+            
+            // Obtém todos os grupos únicos
+            const grupos = [...new Set(produtos.map(p => p.Grupo))].sort();
+            
+            if (grupos.length === 0) {
+                seletor.innerHTML = '<option value="">Nenhuma categoria encontrada</option>';
+                return;
+            }
+            
+            grupos.forEach(grupo => {
+                const option = document.createElement('option');
+                option.value = grupo;
+                option.textContent = grupo;
+                seletor.appendChild(option);
+            });
+            
+            // Adiciona o event listener para mudança de categoria
+            seletor.addEventListener('change', function() {
+                filtrarPorGrupo(this.value);
+            });
+        }
+
+function filtrarPorGrupo(grupo) {
+    grupoAtual = grupo;
+    
+    // Filtra produtos do grupo selecionado com estoque > 0
+    const produtosGrupo = todosProdutos.filter(produto => {
+        return produto.Grupo === grupo && produto.Qtde > 0;
+    });
+    
+    exibirProdutos(produtosGrupo);
+    
+    // Não precisa mais chamar atualizarCarrinho() aqui
+    // Pois exibirProdutos() já vai usar os itens do carrinho
+}
+
+        // Exibe os produtos na página
+function exibirProdutos(produtos) {
+    const container = document.getElementById('produtos-container');
+    
+    if (produtos.length === 0) {
+        container.innerHTML = '<div class="erro-carregamento">Nenhum produto disponível nesta categoria.</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    produtos.forEach(produto => {
+        const preco = parseFloat(produto["Preco venda"].toString().replace(',', '.'));
+        const quantidadeEstoque = produto.Qtde;
+        const imagemSrc = produto.Caminhos || '';
+        
+        // Verifica se este produto já está no carrinho (mesmo de outras categorias)
+        const itemNoCarrinho = carrinho.find(item => item.ref === produto.Referencia);
+        const quantidadeInicial = itemNoCarrinho ? itemNoCarrinho.quantidade : 0;
+        
+        const produtoDiv = document.createElement('div');
+        produtoDiv.className = 'produto';
+        
+        let imagemHTML = '';
+        if (imagemSrc) {
+            imagemHTML = `<img src="${imagemSrc}" alt="${produto.Produto}" class="produto-imagem" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'sem-imagem\'>Sem imagem</div>'">`;
+        } else {
+            imagemHTML = '<div class="sem-imagem">Sem imagem</div>';
+        }
+        
+        produtoDiv.innerHTML = `
+            ${imagemHTML}
+            <div class="produto-info">
+                <div class="produto-nome">${produto.Produto}</div>
+                <div class="produto-ref">Ref: ${produto.Referencia}</div>
+                <div class="produto-preco">R$ ${produto["Preco venda"].toString().replace('.', ',')}</div>
+                <div class="produto-estoque">Estoque: ${quantidadeEstoque} unidades</div>
+            </div>
+            <div class="produto-controles">
+                <div class="contador-quantidade">
+                    <button class="botao-quantidade" onclick="alterarQuantidade(this, -1)" ${quantidadeInicial <= 0 ? 'disabled' : ''}>-</button>
+                    <input type="number" min="0" max="${quantidadeEstoque}" value="${quantidadeInicial}" class="quantidade" 
+                           data-preco="${preco}" data-nome="${produto.Produto}" data-ref="${produto.Referencia}"
+                           onchange="atualizarBotoes(this); atualizarCarrinho()">
+                    <button class="botao-quantidade" onclick="alterarQuantidade(this, 1)" ${quantidadeInicial >= quantidadeEstoque ? 'disabled' : ''}>+</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(produtoDiv);
+    });
+    
+    // Força a atualização dos botões para todos os inputs
+    document.querySelectorAll('.quantidade').forEach(input => {
+        atualizarBotoes(input);
+    });
+}
+
+        // Altera a quantidade do produto
+        function alterarQuantidade(botao, incremento) {
+            const contador = botao.closest('.contador-quantidade');
+            const input = contador.querySelector('.quantidade');
+            const max = parseInt(input.getAttribute('max'));
+            let valor = parseInt(input.value) || 0;
+            
+            valor += incremento;
+            
+            // Limita entre 0 e o máximo em estoque
+            valor = Math.max(0, Math.min(valor, max));
+            
+            input.value = valor;
+            atualizarBotoes(input);
+            atualizarCarrinho();
+        }
+
+        // Atualiza o estado dos botões + e -
+        function atualizarBotoes(input) {
+            const contador = input.closest('.contador-quantidade');
+            const btnMenos = contador.querySelector('.botao-quantidade:first-child');
+            const btnMais = contador.querySelector('.botao-quantidade:last-child');
+            const valor = parseInt(input.value) || 0;
+            const max = parseInt(input.getAttribute('max'));
+            
+            btnMenos.disabled = valor <= 0;
+            btnMais.disabled = valor >= max;
+        }
+
+        // Atualiza o carrinho com os itens selecionados
+function atualizarCarrinho() {
+    // Cria um array temporário para os itens visíveis na tela
+    const itensVisiveis = [];
+    
+    document.querySelectorAll('.quantidade').forEach(input => {
+        const quantidade = parseInt(input.value) || 0;
+        if (quantidade > 0) {
+            itensVisiveis.push({
+                nome: input.getAttribute('data-nome'),
+                ref: input.getAttribute('data-ref'),
+                preco: parseFloat(input.getAttribute('data-preco')),
+                quantidade: quantidade
+            });
+        }
+    });
+    
+    // Mantém os itens de outras categorias que não estão visíveis na tela
+    const itensOutrasCategorias = carrinho.filter(item => 
+        !itensVisiveis.some(visivel => visivel.ref === item.ref) &&
+        !document.querySelector(`.quantidade[data-ref="${item.ref}"]`)
+    );
+    
+    // Combina os itens visíveis com os de outras categorias
+    carrinho = [...itensVisiveis, ...itensOutrasCategorias];
+    
+    // Atualiza contador do carrinho
+    const totalItens = carrinho.reduce((total, item) => total + item.quantidade, 0);
+    document.getElementById('contador-carrinho').textContent = totalItens;
+    
+    // Atualiza total
+    const total = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
+    document.getElementById('total-pedido').textContent = total.toFixed(2).replace('.', ',');
+    document.getElementById('total-carrinho').textContent = total.toFixed(2).replace('.', ',');
+}
+
+        // Abre o modal do carrinho
+        function abrirModalCarrinho() {
+            const modal = document.getElementById('modal-carrinho');
+            const container = document.getElementById('itens-carrinho');
+            
+            if (carrinho.length === 0) {
+                container.innerHTML = '<p>Seu carrinho está vazio</p>';
+            } else {
+                container.innerHTML = '';
+                carrinho.forEach((item, index) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item-carrinho';
+                    itemDiv.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-nome">${item.nome}</div>
+                            <div class="item-detalhes">
+                                ${item.quantidade}x R$ ${item.preco.toFixed(2).replace('.', ',')} | 
+                                Subtotal: R$ ${(item.quantidade * item.preco).toFixed(2).replace('.', ',')}
+                            </div>
+                        </div>
+                        <button class="remover-item" onclick="removerDoCarrinho(${index})">&times;</button>
+                    `;
+                    container.appendChild(itemDiv);
+                });
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // Fecha o modal do carrinho
+        function fecharModalCarrinho() {
+            document.getElementById('modal-carrinho').style.display = 'none';
+        }
+
+        // Remove item do carrinho
+        function removerDoCarrinho(index) {
+            // Encontra o item correspondente nos inputs e define quantidade como 0
+            const item = carrinho[index];
+            document.querySelectorAll('.quantidade').forEach(input => {
+                if (input.getAttribute('data-ref') === item.ref) {
+                    input.value = 0;
+                    atualizarBotoes(input);
+                }
+            });
+            
+            // Atualiza o carrinho
+            atualizarCarrinho();
+            
+            // Atualiza o modal
+            abrirModalCarrinho();
+        }
+
+        function gerarPedidoWhatsApp() {
+            if (carrinho.length === 0) {
+                alert("Por favor, selecione pelo menos um produto!");
+                return;
+            }
+            
+            let mensagem = "🛒 *PEDIDO - MINHA LOJINHA VIRTUAL* 🛒\n\n";
+            mensagem += `📂 *Categoria selecionada:* ${grupoAtual}\n\n`;
+            
+            let total = 0;
+            
+            carrinho.forEach(item => {
+                const subtotal = item.quantidade * item.preco;
+                
+                mensagem += `✔ *${item.nome}* (Ref: ${item.ref})\n`;
+                mensagem += `Quantidade: ${item.quantidade}x | Preço unitário: R$ ${item.preco.toFixed(2).replace('.', ',')}\n`;
+                mensagem += `Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}\n\n`;
+                total += subtotal;
+            });
+            
+            mensagem += `💰 *TOTAL DO PEDIDO: R$ ${total.toFixed(2).replace('.', ',')}*\n\n`;
+            mensagem += "📋 *Informações do Cliente:*\n";
+            mensagem += "Nome: \n";
+            mensagem += "Endereço: \n";
+            mensagem += "Telefone: \n\n";
+            mensagem += "💳 *Forma de Pagamento:*\n";
+            mensagem += "[ ] PIX\n[ ] Cartão de Crédito\n[ ] Boleto\n[ ] Dinheiro\n\n";
+            mensagem += "Por favor, confirme meu pedido!";
+            
+            // Codifica a mensagem para URL
+            const mensagemCodificada = encodeURIComponent(mensagem);
+            const numero = "5581994288807"; // SEU NÚMERO AQUI (com DDD)
+            
+            // Abre o WhatsApp
+            window.open(`https://api.whatsapp.com/send?phone=${numero}&text=${mensagemCodificada}`);
+        }
+
+        // Carrega os produtos quando a página é carregada
+        window.onload = carregarProdutos;
+    </script>
+</body>
+</html>
